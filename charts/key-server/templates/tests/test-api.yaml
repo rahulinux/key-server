@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "key-server.fullname" . }}-test-api"
+  labels:
+    app.kubernetes.io/name: "{{ include "key-server.name" . }}"
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:7.88.1
+      command:
+        - sh
+        - -c
+        - |
+          for i in $(seq 1 5); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' http://{{ include "key-server.fullname" . }}:80/key/8)
+            if [ "$status" = "200" ]; then
+              echo "Key endpoint check succeeded"
+              exit 0
+            else
+              echo "Key endpoint check failed with status $status, retrying..."
+              sleep 2
+            fi
+          done
+          echo "Key endpoint check failed after retries"
+          exit 1
+  restartPolicy: Never

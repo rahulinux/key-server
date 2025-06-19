@@ -1,0 +1,34 @@
+{{- if .Values.ingress.enabled }}
+The Key Server is exposed via Ingress at:
+
+{{- range .Values.ingress.hosts }}
+  http://{{ .host }}
+{{- end }}
+
+{{- else }}
+The Key Server is running as a ClusterIP service named {{ include "key-server.fullname" . }}.
+
+You can access it inside the cluster on port {{ .Values.service.port }}.
+{{- end }}
+
+To check the service status:
+
+  kubectl get pods -l app={{ include "key-server.name" . }}
+
+To port-forward the service locally:
+
+  kubectl port-forward svc/{{ include "key-server.fullname" . }} 8080:80
+
+Then access:
+
+  http://localhost:8080/key/16
+
+{{- if .Values.hpa.enabled }}
+
+Horizontal Pod Autoscaler is enabled.
+You can see the current status with:
+
+  kubectl get hpa {{ include "key-server.fullname" . }}
+
+{{- end }}
+
