@@ -9,32 +9,24 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application
+# Build statically-linked binary
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o key-server ./cmd/key-server
 
-# Production image
-FROM alpine:latest
+# --- Minimal runtime image using scratch ---
+FROM scratch
 
-RUN apk --no-cache add ca-certificates tzdata
-WORKDIR /root/
+# Set working dir
+WORKDIR /
 
-# Create non-root user
-RUN addgroup -g 1001 -S keyserver && \
-    adduser -u 1001 -S keyserver -G keyserver
+# Copy binary and any static assets
+COPY --from=builder /app/key-server /
 
-# Copy binary
-COPY --from=builder /app/key-server .
-
-# Change ownership
-RUN chown keyserver:keyserver key-server
-
-# Switch to non-root user
-USER keyserver
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1
-
+# Expose port
 EXPOSE 8080
 
-CMD ["./key-server"]
+# Healthcheck (optional, remove if not needed)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD ["/key-server", "-healthcheck"]
+
+# Run binary
+ENTRYPOINT ["/key-server"]
