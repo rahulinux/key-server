@@ -6,7 +6,7 @@ A simple HTTP service to generate secure random keys of a given length. Useful f
 
 ## 🚀 Features
 
-- `/key/{length}`: Generate a hex-encoded random key of specified length
+- `/key/{length}`: Generate a hex-encoded random key representing {length} random bytes
 - `/healthz`: Basic health check endpoint
 - `/metrics`: Prometheus metrics (request durations, HTTP status codes, key lengths)
 - Graceful shutdown with `SIGINT`/`SIGTERM`
@@ -47,14 +47,25 @@ You can configure `key-server` using flags or environment variables.
 
 | Method | Path            | Description                        |
 | ------ | --------------- | ---------------------------------- |
-| GET    | `/key/{length}` | Returns a random hex key of length |
+| GET    | `/key/{length}` | Generate a hex-encoded random key representing {length} random bytes (key string length = 2 × {length})  |
 | GET    | `/healthz`      | Health check                       |
 | GET    | `/metrics`      | Prometheus metrics                 |
+
+Note: The `key` field is a hex string. Its length is always `2 × length` because each byte is represented by two hex characters.
 
 Example:
 
 ```bash
 curl http://localhost:8080/key/16
+```
+
+Output:
+
+```
+{
+  "key": "e3b0c44298fc1c149afbf4c8996fb924", // 32 hex chars for 16 bytes
+  "length": 16
+}
 ```
 
 ---
