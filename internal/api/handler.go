@@ -36,6 +36,7 @@ func KeyHandler(maxSize int) http.HandlerFunc {
 
         resp := map[string]string{"key": hex.EncodeToString(bytes)}
         w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
         json.NewEncoder(w).Encode(resp)
     }
 }

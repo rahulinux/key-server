@@ -3,24 +3,45 @@ package main
 import (
     "flag"
     "fmt"
+    "os"
     "log"
     "net/http"
-    "github.com/rahulinux/key-server/internal/api"
-
-    "github.com/gorilla/mux"
+    "github.com/gorilla/handlers"
 )
 
-func main() {
-    srvPort := flag.String("srv-port", "8080", "Port to run the server on")
-    maxSize := flag.Int("max-size", 1024, "Maximum number of bytes allowed")
-    flag.Parse()
+type Config struct {
+    SrvPort string
+    MaxSize int
+}
 
-    r := mux.NewRouter()
-    r.HandleFunc("/key/{length}", api.KeyHandler(*maxSize)).Methods("GET")
+func ParseFlags(args []string) (Config, error) {
+    fs := flag.NewFlagSet("app", flag.ContinueOnError)
+    srvPort := fs.String("srv-port", "8080", "Port to run the server on")
+    maxSize := fs.Int("max-size", 1024, "Maximum number of bytes allowed")
+    if err := fs.Parse(args); err != nil {
+        return Config{}, err
+    }
+    return Config{
+        SrvPort: *srvPort,
+        MaxSize: *maxSize,
+    }, nil
+}
 
-    addr := fmt.Sprintf(":%s", *srvPort)
+func RunServer(cfg Config) error {
+    router := NewRouter(cfg.MaxSize)
+    loggedRouter := handlers.LoggingHandler(os.Stdout, router) 
+
+    addr := fmt.Sprintf(":%s", cfg.SrvPort)
     log.Printf("Listening on %s\n", addr)
-    if err := http.ListenAndServe(addr, r); err != nil {
+    return http.ListenAndServe(addr, loggedRouter)
+}
+
+func main() {
+    cfg, err := ParseFlags(flag.CommandLine.Args())
+    if err != nil {
+      log.Fatal(err)
+    }
+    if err = RunServer(cfg); err != nil {
         log.Fatal(err)
     }
 }
