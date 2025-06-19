@@ -2,42 +2,34 @@ package main
 
 import (
     "net/http"
-    "net/http/httptest"
-    "strings"
-    "reflect"
     "testing"
+    "net/http/httptest"
+
+    "github.com/rahulinux/key-server/internal/config"
 )
 
-func TestRouteIntegration(t *testing.T) {
-    router := NewRouter(16) // use a sample maxSize
+func TestSetupLogger(t *testing.T) {
+    logger := setupLogger("debug")
+    if logger == nil {
+        t.Error("Expected logger, got nil")
+    }
+}
 
-    req := httptest.NewRequest("GET", "/key/8", nil)
+func TestCreateHandler(t *testing.T) {
+    cfg := config.Config{MaxSize: 64}
+    logger := setupLogger("info")
+    h := createHandler(cfg, logger)
+    if h == nil {
+        t.Error("Expected handler, got nil")
+    }
+
+    // Optionally test if it serves metrics
+    req, _ := http.NewRequest("GET", "/metrics", nil)
     rr := httptest.NewRecorder()
-    router.ServeHTTP(rr, req)
+    h.ServeHTTP(rr, req)
 
     if rr.Code != http.StatusOK {
-        t.Errorf("expected 200 OK, got %d", rr.Code)
-    }
-    if !strings.Contains(rr.Body.String(), `"key":"`) {
-        t.Errorf("response body %q does not contain expected key", rr.Body.String())
+        t.Errorf("Expected 200 from /metrics, got %d", rr.Code)
     }
 }
 
-func TestParseFlags(t *testing.T) {
-    args := []string{"--srv-port=9999", "--max-size=42"}
-    cfg, err := ParseFlags(args)
-    if err != nil {
-      t.Errorf("error parsing cli flags: ParseFlags(%v)", args)
-    }
-    want := Config{SrvPort: "9999", MaxSize: 42}
-    if !reflect.DeepEqual(cfg, want) {
-        t.Errorf("ParseFlags(%v) = %+v, want %+v", args, cfg, want)
-    }
-
-    // Test defaults
-    cfg, _ = ParseFlags([]string{})
-    want = Config{SrvPort: "8080", MaxSize: 1024}
-    if !reflect.DeepEqual(cfg, want) {
-        t.Errorf("ParseFlags(defaults) = %+v, want %+v", cfg, want)
-    }
-}
