@@ -1,0 +1,74 @@
+{
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Request Rate (RPS)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_status_codes_total[1m]))",
+          "legendFormat": "RPS",
+          "refId": "A"
+        }
+      ],
+      "id": 1,
+      "datasource": "Prometheus"
+    },
+    {
+      "type": "graph",
+      "title": "Error Rate (%)",
+      "targets": [
+        {
+          "expr": "(sum(rate(http_status_codes_total{code=~\"5..\"}[1m])) / sum(rate(http_status_codes_total[1m]))) * 100",
+          "legendFormat": "5xx Error Rate",
+          "refId": "B"
+        }
+      ],
+      "id": 2,
+      "datasource": "Prometheus"
+    },
+    {
+      "type": "graph",
+      "title": "Latency P99 (seconds)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(request_duration_seconds_bucket[5m]))",
+          "legendFormat": "P99 Latency",
+          "refId": "C"
+        }
+      ],
+      "id": 3,
+      "datasource": "Prometheus"
+    },
+    {
+      "type": "graph",
+      "title": "CPU Usage (per pod)",
+      "targets": [
+        {
+          "expr": "avg by (pod) (rate(container_cpu_usage_seconds_total{pod=~\"key-server.*\"}[1m])) * 100",
+          "legendFormat": "{{pod}}",
+          "refId": "D"
+        }
+      ],
+      "id": 4,
+      "datasource": "Prometheus"
+    },
+    {
+      "type": "graph",
+      "title": "Memory Usage (per pod)",
+      "targets": [
+        {
+          "expr": "avg by (pod) (container_memory_usage_bytes{pod=~\"key-server.*\"})",
+          "legendFormat": "{{pod}}",
+          "refId": "E"
+        }
+      ],
+      "id": 5,
+      "datasource": "Prometheus"
+    }
+  ],
+  "title": "Key Server Monitoring",
+  "schemaVersion": 27,
+  "version": 1,
+  "refresh": "15s"
+}

@@ -1,0 +1,64 @@
+groups:
+- name: key-server-alerts
+  rules:
+  - alert: KeyServerHighErrorRate
+    expr: |
+      (sum(rate(http_status_codes_total{code=~"5.."}[5m])) / sum(rate(http_status_codes_total[5m]))) > 0.05
+    for: 5m
+    labels:
+      severity: critical
+      app: key-server
+    annotations:
+      summary: "High HTTP 5xx error rate on key-server"
+      description: "More than 5% of HTTP requests are failing with 5xx status codes for 5 minutes."
+
+  - alert: KeyServerHighLatency
+    expr: histogram_quantile(0.99, rate(request_duration_seconds_bucket[5m])) > 1
+    for: 5m
+    labels:
+      severity: warning
+      app: key-server
+    annotations:
+      summary: "High latency on key-server"
+      description: "99th percentile request latency is over 1 second for 5 minutes."
+
+  - alert: KeyServerLowAvailability
+    expr: (sum(rate(http_status_codes_total{code="200"}[5m])) / sum(rate(http_status_codes_total[5m]))) < 0.95
+    for: 5m
+    labels:
+      severity: critical
+      app: key-server
+    annotations:
+      summary: "Low availability of key-server"
+      description: "Successful requests below 95% of total for 5 minutes."
+
+  - alert: KeyServerHighCPUUsage
+    expr: avg by (pod) (rate(container_cpu_usage_seconds_total{pod=~"key-server.*"}[1m])) > 0.9
+    for: 5m
+    labels:
+      severity: warning
+      app: key-server
+    annotations:
+      summary: "High CPU usage on key-server pod"
+      description: "CPU usage exceeds 90% on one or more pods."
+
+  - alert: KeyServerHighMemoryUsage
+    expr: avg by (pod) (container_memory_usage_bytes{pod=~"key-server.*"}) > (512 * 1024 * 1024)  # example: 512MiB threshold
+    for: 5m
+    labels:
+      severity: warning
+      app: key-server
+    annotations:
+      summary: "High Memory usage on key-server pod"
+      description: "Memory usage exceeds 512MiB on one or more pods."
+
+  - alert: KeyServerHighRequestRate
+    expr: sum(rate(http_status_codes_total[1m])) > 1000
+    for: 2m
+    labels:
+      severity: critical
+      app: key-server
+    annotations:
+      summary: "High request rate on key-server"
+      description: "Request rate exceeds 1000 RPS, possible abuse or DoS."
+
