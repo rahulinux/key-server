@@ -4,3 +4,6 @@ description: A simple key generator HTTP service
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
+maintainers:
+  - name: rahulinux
+    url: https://github.com/rahulinux
