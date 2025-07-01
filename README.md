@@ -110,4 +110,8 @@ helm install key-server ./key-server
 helm install key-server ./key-server \
   --set image.repository=yourrepo/key-server,image.tag=latest
 ```
+## Production checklist
 
+- [ ] Add API gateway to handle authentication and rate limit
+- [ ] Loadbalancer for SSL termination and distribute load
+- [ ] Enable Horizontal pod autoscaling
