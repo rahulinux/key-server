@@ -1,6 +1,6 @@
 # 🔐 key-server
 
-A simple HTTP service to generate secure random keys of a given length. Useful for APIs, tokens, or one-time secrets. Includes Prometheus metrics and structured logging.
+A simple HTTP service to generate secure random keys of a given length. Includes Prometheus metrics and structured logging.
 
 ---
 
@@ -16,7 +16,7 @@ A simple HTTP service to generate secure random keys of a given length. Useful f
 
 ## 🛠️ Quick Start
 
-### Build & Run (Go 1.21+)
+### Build & Run (Go 1.24+)
 ```bash
 go build -o key-server ./cmd/key-server
 ./key-server --srv-port=8080 --max-size=1024 --log-level=info
@@ -80,13 +80,6 @@ Includes table-driven tests for `/key/{length}` behavior and metrics initializat
 
 ---
 
-## 🧰 Developer Notes
-
-* Prometheus histograms are carefully guarded against invalid bucket ordering.
-* Logging uses Go’s `log/slog` with structured JSON output.
-* Safe shutdown using `context.WithTimeout()` and signal listening.
-
----
 
 ## 📦 Deployment
 
@@ -95,6 +88,10 @@ Use the included Dockerfile:
 ```bash
 docker build -t key-server .
 docker run -p 8080:8080 key-server
+
+# or make command
+make docker-build
+make docker-run
 ```
 
 Health check is already baked in:

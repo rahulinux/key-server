@@ -38,18 +38,7 @@ To keep our **key-server** reliable and performant, we will use proven monitorin
 
 ---
 
-## 4. Alerting Best Practices
-
-| Practice                  | Description                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| **Use ‘for’ duration**    | Set alerts to fire only after sustained issues (e.g., 5 minutes) to avoid noise.     |
-| **Add meaningful labels** | Label alerts with app, severity, and other metadata for easier routing.              |
-| **Clear descriptions**    | Include summary and remediation steps in alert annotations for fast response.        |
-| **Combine signals**       | Use multiple metrics together (e.g., errors + traffic spike) to reduce false alarms. |
-
----
-
-## 5. Configs
+## 4. Configs
 
 - Dashboard JSON file under `grafana/`
 - Alert rules YAML under `prometheus/`
